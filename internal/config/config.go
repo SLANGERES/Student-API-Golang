@@ -9,52 +9,44 @@ import (
 )
 
 type HttpConfig struct {
-	Addr string
+	Addr string `yaml:"address" env-required:"true"`
 }
-//Setting up the configuration file
+
+// Setting up the configuration file
 type Config struct {
 	Env         string `yaml:"env" env:"ENV" env-required:"true" env-default:"production"`
 	StoragePath string `yaml:"storage_path" env-required:"true"`
 	HttpConfig  `yaml:"http_server"`
 }
 
+//Config function that must be run first
 
-//Config function that must be run first 
-
-func MustDone() *Config{
+func MustDone() *Config {
 	var configPath string
 
-	//Checking the env for the config file path
-	configPath=os.Getenv("CONFIG_PATH")
+	// First check environment variable
+	configPath = os.Getenv("CONFIG_PATH")
 
-	if configPath==""{
-		//checking if the path of config file present on the flags or not 
-		flags:=flag.String("config","","path to the configuration file")
+	// Then fallback to command-line flag
+	if configPath == "" {
+		flagPath := flag.String("config", "", "Path to the configuration file")
 		flag.Parse()
-		configPath=*flags
+		configPath = *flagPath
 
-		//if flag empty return fatal error
-		if configPath==""{
-			log.Fatal("Config file needed")
+		if configPath == "" {
+			log.Fatal("Configuration file path must be provided via CONFIG_PATH env variable or --config flag")
 		}
 	}
-	//if the file not exist according to either env or flag
-	if _,err:=os.Stat(configPath);os.IsNotExist(err){
-		log.Fatalf("Config file does not exist:%s",configPath)
 
-
+	// Check if config file exists
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		log.Fatalf("Config file does not exist: %s", configPath)
 	}
-	//making the config instance 
+
 	var cfg Config
-
-	//Seralize the config file 
-	err:=cleanenv.ReadConfig(configPath,&cfg)
-
-	if err!=nil{	
-		log.Fatal("Unable to parse the config data")
+	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
+		log.Fatalf("Unable to parse config data: %v", err)
 	}
 
-	//return the config file by reference
 	return &cfg
-
 }
