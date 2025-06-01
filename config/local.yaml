@@ -1,0 +1,6 @@
+env: "dev"
+
+storage_path: "/slangres/sqllite.db"
+
+http_server:
+  address: "localhost:8080"
