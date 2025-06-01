@@ -23,7 +23,13 @@ profile.cov
 # Go workspace file
 go.work
 go.work.sum
-storage
+
+# ignoring storage database file
+/storage
+
+#ignoring config file
+/config
+
 
 
 # env file
