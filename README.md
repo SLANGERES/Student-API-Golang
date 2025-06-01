@@ -1,4 +1,4 @@
-# Go REST API Boilerplate 🛠️
+# Go REST API  🛠️
 
 A robust and production-ready REST API built with **Golang**, implementing key backend features like **graceful shutdown**, **rate limiting**, **caching**, and more. Ideal for developers looking to start scalable Go backend services.
 
