@@ -3,6 +3,7 @@ package student
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -20,7 +21,6 @@ func Home() http.HandlerFunc {
 }
 
 func PostStudent() http.HandlerFunc {
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		var std types.Student
 
@@ -28,24 +28,32 @@ func PostStudent() http.HandlerFunc {
 
 		err := json.NewDecoder(r.Body).Decode(&std)
 
-		//this is specially for the missing values EOF
+		// Handle missing body
 		if errors.Is(err, io.EOF) {
 			util.WriteJson(w, http.StatusBadRequest, util.GeneralErrorResponse(err))
-
 			return
 		}
 
-		if err!=nil{
-			util.WriteJson(w,http.StatusBadRequest,util.GeneralErrorResponse(err))
+		// Handle other decode errors
+		if err != nil {
+			util.WriteJson(w, http.StatusBadRequest, util.GeneralErrorResponse(err))
+			return
 		}
 
-		// TODO Validate Request
-
-		err=validator.New().Struct(std)
-		if err!=nil{
-			util.WriteJson(w,http.StatusBadRequest,util.GeneralErrorResponse(err))
+		// ✅ Validate request
+		err = validator.New().Struct(std)
+		if err != nil {
+			if validationErrors, ok := err.(validator.ValidationErrors); ok {
+				fmt.Println(validationErrors)
+				util.WriteJson(w, http.StatusBadRequest, util.ValidationError(validationErrors))
+			} else {
+				// Optional: catch other validation-related errors
+				util.WriteJson(w, http.StatusInternalServerError, util.GeneralErrorResponse(err))
+			}
+			return
 		}
 
-		util.WriteJson(w, http.StatusCreated, map[string]string{"sucess": "ok"})
+		// 🎉 Success
+		util.WriteJson(w, http.StatusCreated, map[string]string{"success": "ok"})
 	}
 }
