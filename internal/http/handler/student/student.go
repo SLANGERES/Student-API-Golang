@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/go-playground/validator"
 	"github.com/slangeres/Student-api-go/internal/types"
 	"github.com/slangeres/Student-api-go/internal/util"
 )
@@ -32,6 +33,17 @@ func PostStudent() http.HandlerFunc {
 			util.WriteJson(w, http.StatusBadRequest, util.GeneralErrorResponse(err))
 
 			return
+		}
+
+		if err!=nil{
+			util.WriteJson(w,http.StatusBadRequest,util.GeneralErrorResponse(err))
+		}
+
+		// TODO Validate Request
+
+		err=validator.New().Struct(std)
+		if err!=nil{
+			util.WriteJson(w,http.StatusBadRequest,util.GeneralErrorResponse(err))
 		}
 
 		util.WriteJson(w, http.StatusCreated, map[string]string{"sucess": "ok"})
